@@ -8,7 +8,7 @@ class PretokenWord:
   word = ""
   encoded_token_ids = []
 
-def run_train_bpe(
+def train_bpe(
     input_path: str | os.PathLike,
     vocab_size: int,
     special_tokens: list[str],
