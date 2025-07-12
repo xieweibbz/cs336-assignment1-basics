@@ -57,5 +57,6 @@ class WeiPositionwiseFfd(nn.Module):
     self.w_2 = WeiLinear(d_ff, d_model, device=device, dtype=dtype)
 
   def forward(self, x: torch.Tensor) -> torch.Tensor:
-    s1 = torch.sigmoid(self.w_1(x)) * self.w_3(x) 
+    s0 = self.w_1(x)
+    s1 = (torch.sigmoid(s0) * s0) * self.w_3(x) 
     return self.w_2(s1)
