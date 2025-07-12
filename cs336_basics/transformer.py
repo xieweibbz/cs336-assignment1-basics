@@ -46,3 +46,16 @@ class WeiRMSNorm(nn.Module):
     avg = torch.sum(torch.square(x), dim=-1) / self.d_model
     result = x / torch.unsqueeze(torch.sqrt(avg + self.eps), -1) * self.g
     return result.to(in_dtype)
+
+
+class WeiPositionwiseFfd(nn.Module):
+
+  def __init__(self, d_model, d_ff, device=None, dtype=None):
+    super(WeiPositionwiseFfd, self).__init__()
+    self.w_1 = WeiLinear(d_model, d_ff, device=device, dtype=dtype)
+    self.w_3 = WeiLinear(d_model, d_ff, device=device, dtype=dtype)
+    self.w_2 = WeiLinear(d_ff, d_model, device=device, dtype=dtype)
+
+  def forward(self, x: torch.Tensor) -> torch.Tensor:
+    s1 = torch.sigmoid(self.w_1(x)) * self.w_3(x) 
+    return self.w_2(s1)
