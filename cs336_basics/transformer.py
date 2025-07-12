@@ -26,4 +26,7 @@ class WeiEmbedding(nn.Module):
 
   def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
     # dim=0 select rows
-    return torch.index_select(self.embedding, dim=0, index=token_ids)
+    reshaped = torch.reshape(token_ids, (-1,))
+    re = torch.index_select(self.embedding, dim=0, index=reshaped)
+    result_shape = token_ids.shape + (self.embedding.shape[-1],)
+    return torch.reshape(re, result_shape)
