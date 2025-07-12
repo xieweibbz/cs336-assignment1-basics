@@ -12,6 +12,7 @@ from torch import Tensor
 
 from cs336_basics.train_bpe import train_bpe
 from cs336_basics.transformer import WeiEmbedding
+from cs336_basics.transformer import WeiLinear
 
 def run_linear(
     d_in: int,
