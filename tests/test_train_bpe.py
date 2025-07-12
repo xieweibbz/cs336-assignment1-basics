@@ -49,6 +49,7 @@ def test_train_bpe():
         ]
     # The golden file is wrong.
     # assert merges == reference_merges    
+    diff = 0
     for i in range(len(merges)):
         if merges[i] != reference_merges[i]:
             diff += 1
