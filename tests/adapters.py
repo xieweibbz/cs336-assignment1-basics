@@ -14,6 +14,7 @@ from cs336_basics.train_bpe import train_bpe
 from cs336_basics.transformer import WeiEmbedding
 from cs336_basics.transformer import WeiLinear
 from cs336_basics.transformer import WeiRMSNorm
+from cs336_basics.transformer import WeiPositionwiseFfd
 
 def run_linear(
     d_in: int,
@@ -92,7 +93,13 @@ def run_swiglu(
     # swiglu.w1.weight.data = w1_weight
     # swiglu.w2.weight.data = w2_weight
     # swiglu.w3.weight.data = w3_weight
-    raise NotImplementedError
+
+    wei_pw_ffd = WeiPositionwiseFfd(d_model, d_ff)
+    wei_pw_ffd.w_1.w.data = w1_weight
+    wei_pw_ffd.w_2.w.data = w2_weight
+    wei_pw_ffd.w_3.w.data = w3_weight
+    return wei_pw_ffd(in_features)
+
 
 
 def run_scaled_dot_product_attention(
