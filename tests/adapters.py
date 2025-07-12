@@ -7,9 +7,11 @@ from jaxtyping import Float, Int
 
 import numpy.typing as npt
 import torch
+import torch.nn as nn
 from torch import Tensor
 
 from cs336_basics.train_bpe import train_bpe
+from cs336_basics.transformer import WeiEmbedding
 
 def run_linear(
     d_in: int,
@@ -52,7 +54,9 @@ def run_embedding(
         Float[Tensor, "... d_model"]: Batch of embeddings returned by your Embedding layer.
     """
 
-    raise NotImplementedError
+    wei_embedding = WeiEmbedding(vocab_size, d_model)
+    wei_embedding.embedding = nn.Parameter(weights)
+    return wei_embedding(token_ids)
 
 
 def run_swiglu(
