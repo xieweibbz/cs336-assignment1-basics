@@ -32,7 +32,9 @@ def run_linear(
         Float[Tensor, "... d_out"]: The transformed output of your linear module.
     """
 
-    raise NotImplementedError
+    wei_linear = WeiLinear(d_in, d_out)
+    wei_linear.w = nn.Parameter(weights)
+    return wei_linear(in_features)
 
 
 def run_embedding(
