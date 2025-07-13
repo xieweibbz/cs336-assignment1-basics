@@ -3,6 +3,8 @@ import math
 import torch
 import torch.nn as nn
 from einops import rearrange, einsum
+from jaxtyping import Float, Int
+from torch import Tensor
 
 
 class WeiLinear(nn.Module):
@@ -95,3 +97,8 @@ class WeiRoPE(nn.Module):
     ], -1)
     return result.reshape(x.shape)
 
+def wei_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, " ..."]:
+  max, max_i = torch.max(in_features, dim=dim, keepdim = True)
+  exp = torch.exp(in_features - max)
+  sum = torch.sum(exp, dim=dim, keepdim = True)
+  return exp / sum
