@@ -60,3 +60,38 @@ class WeiPositionwiseFfd(nn.Module):
     s0 = self.w_1(x)
     s1 = (torch.sigmoid(s0) * s0) * self.w_3(x) 
     return self.w_2(s1)
+
+class WeiRoPE(nn.Module):
+  def __init__(self, theta: float, d_k: int, max_seq_len: int, device=None):
+    super(WeiRoPE, self).__init__()
+    self.theta = theta
+    self.d_k = d_k
+    self.max_seq_len = max_seq_len
+    self.device = device
+
+  def forward(self, x: torch.Tensor, token_positions: torch.Tensor) -> torch.Tensor:
+    assert self.d_k % 2 == 0, "d_k must be even"
+    assert self.max_seq_len >= x.shape[-2], "max sql len exceed"
+    # reshape x to ... squ, d_k / 2, 2
+    x_new_shape = x.shape[0:-1] + (self.d_k // 2, 2)
+    x_reshaped = x.reshape(x_new_shape)
+
+    # reshape other parameters to ... squ, d_k / 2, 1
+    token_positions_reshaped = token_positions.unsqueeze(-1).unsqueeze(-1)
+    token_positions_reshaped = token_positions_reshaped.repeat(tuple(1 for i in range(len(token_positions_reshaped.shape) - 2)) + (self.d_k // 2, 1))
+
+    k = torch.tensor(range(0, self.d_k // 2), device=self.device)
+    k = k.unsqueeze(-1)
+    k_new_shape = x.shape[0:-1] + (self.d_k // 2, 1)
+    k = k.expand(k_new_shape)
+    
+    result = torch.stack([
+        # i = token_positions[..., 0]
+        # k = 2*k[..., 0]
+        # x = x_reshaped[..., 0] x_reshaped[..., 1]
+        torch.cos(token_positions_reshaped[..., 0] / (self.theta ** (2*k[..., 0] / self.d_k))) * x_reshaped[..., 0] - torch.sin(token_positions_reshaped[..., 0] / (self.theta ** (2*k[..., 0] / self.d_k))) * x_reshaped[..., 1],
+        torch.sin(token_positions_reshaped[..., 0] / (self.theta ** (2*k[..., 0] / self.d_k))) * x_reshaped[..., 0] + torch.cos(token_positions_reshaped[..., 0] / (self.theta ** (2*k[..., 0] / self.d_k))) * x_reshaped[..., 1]
+
+    ], -1)
+    return result.reshape(x.shape)
+
