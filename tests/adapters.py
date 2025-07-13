@@ -15,6 +15,7 @@ from cs336_basics.transformer import WeiEmbedding
 from cs336_basics.transformer import WeiLinear
 from cs336_basics.transformer import WeiRMSNorm
 from cs336_basics.transformer import WeiPositionwiseFfd
+from cs336_basics.transformer import WeiRoPE
 
 def run_linear(
     d_in: int,
@@ -216,7 +217,8 @@ def run_rope(
     Returns:
         Float[Tensor, " ... sequence_length d_k"]: Tensor with RoPEd input.
     """
-    raise NotImplementedError
+    rope = WeiRoPE(theta, d_k, max_seq_len)
+    return rope(in_query_or_key, token_positions)
 
 
 def run_transformer_block(
