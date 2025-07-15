@@ -121,5 +121,5 @@ class WeiAttention(nn.Module):
       # print(int_mask)
       att = att + int_mask
 
-    att = wei_softmax(att, dim=-1)
+    att = wei_softmax(att, dim=-2)
     return einsum(att, v, "batch_size ... seq_len_q seq_len_k , batch_size ... seq_len d_k -> batch_size ... seq_len d_k")
