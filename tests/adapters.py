@@ -18,6 +18,7 @@ from cs336_basics.transformer import WeiPositionwiseFfd
 from cs336_basics.transformer import WeiRoPE
 from cs336_basics.transformer import wei_softmax
 from cs336_basics.transformer import WeiAttention
+from cs336_basics.transformer import WeiMultiHeadSelfAttention
 
 def run_linear(
     d_in: int,
@@ -158,7 +159,26 @@ def run_multihead_self_attention(
         Float[Tensor, " ... sequence_length d_out"]: Tensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
-    raise NotImplementedError
+    self_att = WeiMultiHeadSelfAttention(d_model, num_heads, q_proj_weight.shape[-1], q_proj_weight.shape[-2], k_proj_weight.shape[-2], v_proj_weight.shape[-2])
+    multi_head_q_proj_weight = q_proj_weight.expand((num_heads,) + q_proj_weight.shape )
+    multi_head_q_proj_weight_shape = multi_head_q_proj_weight.shape
+    multi_head_q_proj_weight = multi_head_q_proj_weight.reshape((multi_head_q_proj_weight_shape[0] * multi_head_q_proj_weight_shape[1], ) + multi_head_q_proj_weight_shape[2 : ])
+    
+    multi_head_k_proj_weight = k_proj_weight.expand((num_heads,) + k_proj_weight.shape )
+    multi_head_k_proj_weight_shape = multi_head_k_proj_weight.shape
+    multi_head_k_proj_weight = multi_head_k_proj_weight.reshape((multi_head_k_proj_weight_shape[0] * multi_head_k_proj_weight_shape[1], ) + multi_head_k_proj_weight_shape[2 : ])
+    
+    multi_head_v_proj_weight = v_proj_weight.expand((num_heads,) + v_proj_weight.shape )
+    multi_head_v_proj_weight_shape = multi_head_v_proj_weight.shape
+    multi_head_v_proj_weight = multi_head_v_proj_weight.reshape((multi_head_v_proj_weight_shape[0] * multi_head_v_proj_weight_shape[1], ) + multi_head_v_proj_weight_shape[2 : ])
+
+    self_att.w_q.w.data = multi_head_q_proj_weight
+    self_att.w_k.w.data = multi_head_k_proj_weight
+    self_att.w_v.w.data = multi_head_v_proj_weight
+
+    return self_att(in_features)
+
+    
 
 
 def run_multihead_self_attention_with_rope(
