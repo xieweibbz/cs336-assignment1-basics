@@ -117,9 +117,29 @@ class WeiAttention(nn.Module):
 
     if mask is not None:
       int_mask = torch.where(mask, 0, -torch.inf)
-      #print(int_mask)
-      # print(int_mask)
       att = att + int_mask
 
     att = wei_softmax(att, dim=-1)
     return einsum(att, v, "batch_size ... seq_len_q seq_len_k , batch_size ... seq_len_k d_k -> batch_size ... seq_len_q d_k")
+
+class WeiMultiHeadSelfAttention(nn.Module):
+  def __init__(self, d_model: int, num_heads: int, d_att_in: int, d_q: int, d_k: int, d_v: int, device=None, dtype=None):
+    super(WeiMultiHeadSelfAttention, self).__init__()
+    self.w_q = WeiLinear(d_att_in, num_heads * d_q, device=device, dtype=dtype)
+    self.w_k = WeiLinear(d_att_in, num_heads * d_k, device=device, dtype=dtype)
+    self.w_v = WeiLinear(d_att_in, num_heads * d_v, device=device, dtype=dtype)
+    self.attention = WeiAttention(device=device, dtype=dtype)
+    self.w_o = WeiLinear(num_heads * d_v, d_model, device=device, dtype=dtype)
+    self.device = device
+    self.dtype = dtype
+
+  def forward(self, in_features: torch.Tensor) -> torch.Tensor:
+    q = self.w_q(in_features)
+    k = self.w_k(in_features)
+    v = self.w_v(in_features)
+    sequence_length = in_features.shape[-2]
+    mask = torch.ones((sequence_length, sequence_length), dtype=torch.bool, device=self.device)
+    mask = torch.triu(mask)
+    mask = mask.expand(in_features.shape[0: -2] + (sequence_length, sequence_length))
+    att_output = self.attention(q, k, v, mask)
+    return self.w_o(att_output)
