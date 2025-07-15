@@ -111,15 +111,15 @@ class WeiAttention(nn.Module):
     self.dtype = dtype
 
   def forward(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, mask: torch.Tensor  | None = None) -> torch.Tensor:
-    att = einsum(q, k, "batch_size ... seq_len_q d_k , batch_size ... seq_len_k d_k -> batch_size ... seq_len_k seq_len_q")
+    att = einsum(q, k, "batch_size ... seq_len_q d_k , batch_size ... seq_len_k d_k -> batch_size ... seq_len_q seq_len_k")
     s_dk = math.sqrt(k.shape[-1])
     att = att / s_dk
 
     if mask is not None:
-      int_mask = mask.long() # True Flase -> 1 0
-      int_mask = int_mask - torch.ones(int_mask.shape) # True Flase -> 1 0 -> 0 -1
-      int_mask = int_mask * torch.full(int_mask.shape, torch.inf) # True Flase -> 1 0 -> 0 -1 -> 0 inf
-      att = att - int_mask
+      int_mask = torch.where(mask, 0, -torch.inf)
+      #print(int_mask)
+      # print(int_mask)
+      att = att + int_mask
 
     att = wei_softmax(att, dim=-1)
-    return einsum(att, v, "batch_size ... seq_len_k seq_len_q , batch_size ... seq_len d_v -> batch_size ... seq_len_k d_v")
+    return einsum(att, v, "batch_size ... seq_len_q seq_len_k , batch_size ... seq_len d_k -> batch_size ... seq_len d_k")
