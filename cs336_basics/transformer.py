@@ -111,6 +111,10 @@ class WeiAttention(nn.Module):
     self.dtype = dtype
 
   def forward(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, mask: torch.Tensor  | None = None) -> torch.Tensor:
+    print(q.shape)
+    print(k.shape)
+    print(v.shape)
+    print(m.shape)
     att = einsum(q, k, "batch_size ... seq_len_q d_k , batch_size ... seq_len_k d_k -> batch_size ... seq_len_k seq_len_q")
     s_dk = math.sqrt(k.shape[-1])
     att = att / s_dk
