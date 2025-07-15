@@ -119,6 +119,7 @@ class WeiAttention(nn.Module):
       int_mask = mask.long() # True Flase -> 1 0
       int_mask = int_mask - torch.ones(int_mask.shape) # True Flase -> 1 0 -> 0 -1
       int_mask = int_mask * torch.full(int_mask.shape, torch.inf) # True Flase -> 1 0 -> 0 -1 -> 0 inf
+      int_mask.expand(int_mask.shape[0:-3] + int_mask.shape)
       att = att - int_mask
 
     att = wei_softmax(att, dim=-1)
