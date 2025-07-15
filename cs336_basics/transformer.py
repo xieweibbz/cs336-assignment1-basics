@@ -102,3 +102,24 @@ def wei_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, "
   exp = torch.exp(in_features - max)
   sum = torch.sum(exp, dim=dim, keepdim = True)
   return exp / sum
+
+
+class WeiAttention(nn.Module):
+  def __init__(self, device=None, dtype=None):
+    super(WeiAttention, self).__init__()
+    self.device = device
+    self.dtype = dtype
+
+  def forward(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, mask: torch.Tensor  | None = None) -> torch.Tensor:
+    att = einsum(q, k, "batch_size ... seq_len_q d_k , batch_size ... seq_len_k d_k -> batch_size ... seq_len_k seq_len_q")
+    s_dk = math.sqrt(k.shape[-1])
+    att = att / s_dk
+
+    if mask is not None:
+      int_mask = tf.cast(mask, self.device, dtype=tf.int32) # True Flase -> 1 0
+      int_mask = int_mask - torch.ones(int_mask.size, self.device, dtype=tf.int32) # True Flase -> 1 0 -> 0 -1
+      int_mask = int_mask * torch.full(int_mask.size, inf, self.device) # True Flase -> 1 0 -> 0 -1 -> 0 inf
+      att = att - int_mask
+
+    att = wei_softmax(att, dim=-1)
+    return einsum(att, v, "batch_size ... seq_len seq_len , batch_size ... seq_len d_k -> batch_size ... seq_len d_k")
