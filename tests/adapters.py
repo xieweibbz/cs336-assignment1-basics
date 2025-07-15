@@ -17,6 +17,7 @@ from cs336_basics.transformer import WeiRMSNorm
 from cs336_basics.transformer import WeiPositionwiseFfd
 from cs336_basics.transformer import WeiRoPE
 from cs336_basics.transformer import wei_softmax
+from cs336_basics.transformer import WeiAttention
 
 def run_linear(
     d_in: int,
@@ -122,7 +123,8 @@ def run_scaled_dot_product_attention(
     Returns:
         Float[Tensor, " ... queries d_v"]: Output of SDPA
     """
-    raise NotImplementedError
+    att = WeiAttention()
+    return att(Q, K, V, mask)
 
 
 def run_multihead_self_attention(
