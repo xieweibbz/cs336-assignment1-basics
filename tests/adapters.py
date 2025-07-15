@@ -172,9 +172,12 @@ def run_multihead_self_attention(
     multi_head_v_proj_weight_shape = multi_head_v_proj_weight.shape
     multi_head_v_proj_weight = multi_head_v_proj_weight.reshape((multi_head_v_proj_weight_shape[0] * multi_head_v_proj_weight_shape[1], ) + multi_head_v_proj_weight_shape[2 : ])
 
+    multi_head_o_proj_weight = multi_head_o_proj_weight.repeat(1, num_heads)
+
     self_att.w_q.w.data = multi_head_q_proj_weight
     self_att.w_k.w.data = multi_head_k_proj_weight
     self_att.w_v.w.data = multi_head_v_proj_weight
+    self_att.w_o.w.data = multi_head_o_proj_weight
 
     return self_att(in_features)
 
