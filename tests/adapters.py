@@ -167,8 +167,8 @@ def run_multihead_self_attention(
     # self_att.w_o.w.data = o_proj_weight
     # return self_att(in_features)
     mha = CopyMultiHeadSelfAttention(d_model, num_heads)
-    mha.w_qkv.W.data = torch.cat([q_proj_weight, k_proj_weight, v_proj_weight], dim=0)
-    mha.w_o.W.data = o_proj_weight
+    mha.w_qkv.w.data = torch.cat([q_proj_weight, k_proj_weight, v_proj_weight], dim=0)
+    mha.w_o.w.data = o_proj_weight
     return mha(in_features)
 
     
