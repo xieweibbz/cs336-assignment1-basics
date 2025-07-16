@@ -125,6 +125,9 @@ class WeiAttention(nn.Module):
 class WeiMultiHeadSelfAttention(nn.Module):
   def __init__(self, d_model: int, num_heads: int, d_q: int, d_k: int, d_v: int, device=None, dtype=None):
     super(WeiMultiHeadSelfAttention, self).__init__()
+    assert d_k == d_model // num_heads
+    assert d_k == d_q
+    assert d_k == d_v
     self.w_q = WeiLinear(d_model, num_heads * d_q, device=device, dtype=dtype)
     self.w_k = WeiLinear(d_model, num_heads * d_k, device=device, dtype=dtype)
     self.w_v = WeiLinear(d_model, num_heads * d_v, device=device, dtype=dtype)
@@ -138,14 +141,13 @@ class WeiMultiHeadSelfAttention(nn.Module):
     k = self.w_k(in_features)
     v = self.w_v(in_features)
     sequence_length = in_features.shape[-2]
-    mask = torch.ones((sequence_length, sequence_length), dtype=torch.bool, device=self.device)
-    mask = torch.triu(mask).transpose(0,1)
-    mask = mask.expand(in_features.shape[0: -2] + (sequence_length, sequence_length))
+    mask = torch.tril(torch.ones((seq_len, seq_len), dtype=torch.bool)).to(self.device)
     att_output = self.attention(q, k, v, mask)
     return self.w_o(att_output)
 
 
 class CopyMultiHeadSelfAttention(nn.Module):
+  
     def __init__(self, d_model: int, num_heads: int, device=None, dtype=None):
         super().__init__()
         self.d_model = d_model
