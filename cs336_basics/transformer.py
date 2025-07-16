@@ -125,9 +125,9 @@ class WeiAttention(nn.Module):
 class WeiMultiHeadSelfAttention(nn.Module):
   def __init__(self, d_model: int, num_heads: int, d_q: int, d_k: int, d_v: int, device=None, dtype=None):
     super(WeiMultiHeadSelfAttention, self).__init__()
-    self.w_q = WeiLinear(num_heads, num_heads * d_q, device=device, dtype=dtype)
-    self.w_k = WeiLinear(num_heads, num_heads * d_k, device=device, dtype=dtype)
-    self.w_v = WeiLinear(num_heads, num_heads * d_v, device=device, dtype=dtype)
+    self.w_q = WeiLinear(d_model, num_heads * d_q, device=device, dtype=dtype)
+    self.w_k = WeiLinear(d_model, num_heads * d_k, device=device, dtype=dtype)
+    self.w_v = WeiLinear(d_model, num_heads * d_v, device=device, dtype=dtype)
     self.attention = WeiAttention(device=device, dtype=dtype)
     self.w_o = WeiLinear(num_heads * d_v, d_model, device=device, dtype=dtype)
     self.device = device
