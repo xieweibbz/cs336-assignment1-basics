@@ -126,22 +126,29 @@ class WeiMultiHeadSelfAttention(nn.Module):
   def __init__(self, d_model: int, num_heads: int, d_q: int, d_k: int, d_v: int, device=None, dtype=None):
     super(WeiMultiHeadSelfAttention, self).__init__()
     
-    self.copy_d_k = d_model // num_heads
-    self.w_q = WeiLinear(d_model, num_heads * self.copy_d_k, device=device, dtype=dtype)
-    self.w_k = WeiLinear(d_model, num_heads * self.copy_d_k, device=device, dtype=dtype)
-    self.w_v = WeiLinear(d_model, num_heads * self.copy_d_k, device=device, dtype=dtype)
+    assert d_k = d_q
+    self.w_q = WeiLinear(d_model, num_heads * d_q, device=device, dtype=dtype)
+    self.w_k = WeiLinear(d_model, num_heads * d_k, device=device, dtype=dtype)
+    self.w_v = WeiLinear(d_model, num_heads * d_v, device=device, dtype=dtype)
     self.attention = WeiAttention(device=device, dtype=dtype)
-    self.w_o = WeiLinear(num_heads * self.copy_d_k, d_model, device=device, dtype=dtype)
+    self.w_o = WeiLinear(num_heads * d_v, d_model, device=device, dtype=dtype)
     self.device = device
     self.dtype = dtype
+    self.num_heads = num_heads
 
   def forward(self, in_features: torch.Tensor) -> torch.Tensor:
     q = self.w_q(in_features)
     k = self.w_k(in_features)
     v = self.w_v(in_features)
+    
+    re_q = rearrange(q, "... seq_len (head d_q) -> ... head seq_len d_q", head=self.num_heads)
+    re_k = rearrange(k, "... seq_len (head d_k) -> ... head seq_len d_k", head=self.num_heads)
+    re_v = rearrange(v, "... seq_len (head d_v) -> ... head seq_len d_v", head=self.num_heads)
+
     sequence_length = in_features.shape[-2]
     mask = torch.tril(torch.ones((sequence_length, sequence_length), dtype=torch.bool)).to(self.device)
     att_output = self.attention(q, k, v, mask)
+    att_output = rearrange(att_output, "... head seq_len d_v -> ... seq_len (head d_v)")
     return self.w_o(att_output)
 
 
