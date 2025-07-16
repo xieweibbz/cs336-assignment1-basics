@@ -19,7 +19,7 @@ from cs336_basics.transformer import WeiRoPE
 from cs336_basics.transformer import wei_softmax
 from cs336_basics.transformer import WeiAttention
 from cs336_basics.transformer import WeiMultiHeadSelfAttention
-from cs336_basics.transformer import CopyMultiHeadSelfAttention
+from cs336_basics.transformer import WeiMultiHeadSelfAttentionWithRoPE
 
 def run_linear(
     d_in: int,
@@ -166,10 +166,6 @@ def run_multihead_self_attention(
     self_att.w_v.w.data = v_proj_weight
     self_att.w_o.w.data = o_proj_weight
     return self_att(in_features)
-    # mha = CopyMultiHeadSelfAttention(d_model, num_heads)
-    # mha.w_qkv.w.data = torch.cat([q_proj_weight, k_proj_weight, v_proj_weight], dim=0)
-    # mha.w_o.w.data = o_proj_weight
-    # return mha(in_features)
 
     
 
@@ -211,7 +207,14 @@ def run_multihead_self_attention_with_rope(
         Float[Tensor, " ... sequence_length d_out"]: Tensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
-    raise NotImplementedError
+    
+    self_att = WeiMultiHeadSelfAttentionWithRoPE(d_model, num_heads, q_proj_weight.shape[-2], k_proj_weight.shape[-2], v_proj_weight.shape[-2], theta, max_seq_len)
+    self_att.w_q.w.data = q_proj_weight
+    self_att.w_k.w.data = k_proj_weight
+    self_att.w_v.w.data = v_proj_weight
+    self_att.w_o.w.data = o_proj_weight
+    return self_att(in_features, token_positions)
+    
 
 
 def run_rope(
