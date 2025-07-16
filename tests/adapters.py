@@ -208,7 +208,7 @@ def run_multihead_self_attention_with_rope(
         implementation with the given QKV projection weights and input features.
     """
     
-    self_att = WeiMultiHeadSelfAttentionWithRoPE(d_model, num_heads, q_proj_weight.shape[-2] / num_heads, k_proj_weight.shape[-2] / num_heads, v_proj_weight.shape[-2] / num_heads, theta, max_seq_len)
+    self_att = WeiMultiHeadSelfAttentionWithRoPE(d_model, num_heads, q_proj_weight.shape[-2] // num_heads, k_proj_weight.shape[-2] // num_heads, v_proj_weight.shape[-2] // num_heads, theta, max_seq_len)
     self_att.w_q.w.data = q_proj_weight
     self_att.w_k.w.data = k_proj_weight
     self_att.w_v.w.data = v_proj_weight
