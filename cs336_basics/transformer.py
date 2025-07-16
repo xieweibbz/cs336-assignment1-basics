@@ -134,12 +134,9 @@ class WeiMultiHeadSelfAttention(nn.Module):
     self.dtype = dtype
 
   def forward(self, in_features: torch.Tensor) -> torch.Tensor:
-    q = einsum(self.w_q.w, in_features, "num_heads_d_q d_in,  ... sequence_length d_in -> ... sequence_length num_heads_d_q")
-    k = einsum(self.w_k.w, in_features, "num_heads_d_k d_in,  ... sequence_length d_in -> ... sequence_length num_heads_d_k")
-    v = einsum(self.w_v.w, in_features, "num_heads_d_v d_in,  ... sequence_length d_in -> ... sequence_length num_heads_d_v")
-    #q = self.w_q(in_features)
-    #k = self.w_k(in_features)
-    #v = self.w_v(in_features)
+    q = self.w_q(in_features)
+    k = self.w_k(in_features)
+    v = self.w_v(in_features)
     sequence_length = in_features.shape[-2]
     mask = torch.ones((sequence_length, sequence_length), dtype=torch.bool, device=self.device)
     mask = torch.triu(mask).transpose(0,1)
