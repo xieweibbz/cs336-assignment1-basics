@@ -143,3 +143,33 @@ class WeiMultiHeadSelfAttention(nn.Module):
     mask = mask.expand(in_features.shape[0: -2] + (sequence_length, sequence_length))
     att_output = self.attention(q, k, v, mask)
     return self.w_o(att_output)
+
+
+class CopyMultiHeadSelfAttention(nn.Module):
+    def __init__(self, d_model: int, num_heads: int, device=None, dtype=None):
+        super().__init__()
+        self.d_model = d_model
+        self.num_heads = num_heads
+        self.d_k = d_model // num_heads # d_v = d_k
+        assert d_model % num_heads == 0, "d_model must be divisible by num_heads"
+        self.device = device
+        self.dtype = dtype
+
+        self.w_qkv = WeiLinear(d_model, self.num_heads * self.d_k * 3, device=device, dtype=dtype)
+        self.w_o = WeiLinear(self.num_heads * self.d_k, self.d_model, device=device, dtype=dtype)
+        self.attention = WeiAttention(device=device, dtype=dtype)
+    
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        seq_len = x.shape[-2]
+
+        QKV = self.w_qkv(x)  # (batch, ..., seq_len, head * d_k * 3)
+        Q, K, V = rearrange(QKV, "... seq_len (three head d_k) -> three ... head seq_len d_k", three=3, head=self.num_heads)
+
+        mask = torch.tril(torch.ones((seq_len, seq_len), dtype=torch.bool)).to(self.device)
+        
+        atten = self.attention(Q, K, V, mask)  # (batch, ..., head, seq_len, d_k)
+        
+        # 将多头拼接回去
+        atten = rearrange(atten, "... head seq_len d_k -> ... seq_len (head d_k)")
+        
+        return self.w_o(atten)  # (batch, ..., seq_len, d_model)
