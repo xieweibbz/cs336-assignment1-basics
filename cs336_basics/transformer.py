@@ -141,9 +141,9 @@ class WeiMultiHeadSelfAttention(nn.Module):
     k = self.w_k(in_features)
     v = self.w_v(in_features)
     
-    re_q = rearrange(q, "... seq_len (head d_q) -> ... head seq_len d_q", head=self.num_heads)
-    re_k = rearrange(k, "... seq_len (head d_k) -> ... head seq_len d_k", head=self.num_heads)
-    re_v = rearrange(v, "... seq_len (head d_v) -> ... head seq_len d_v", head=self.num_heads)
+    q = rearrange(q, "... seq_len (head d_q) -> ... head seq_len d_q", head=self.num_heads)
+    k = rearrange(k, "... seq_len (head d_k) -> ... head seq_len d_k", head=self.num_heads)
+    v = rearrange(v, "... seq_len (head d_v) -> ... head seq_len d_v", head=self.num_heads)
 
     sequence_length = in_features.shape[-2]
     mask = torch.tril(torch.ones((sequence_length, sequence_length), dtype=torch.bool)).to(self.device)
