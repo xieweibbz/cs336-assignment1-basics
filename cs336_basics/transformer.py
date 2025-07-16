@@ -152,32 +152,25 @@ class WeiMultiHeadSelfAttention(nn.Module):
     return self.w_o(att_output)
 
 
-class CopyMultiHeadSelfAttention(nn.Module):
+class WeiMultiHeadSelfAttentionWithRoPE(WeiMultiHeadSelfAttention):
+  def __init__(self, d_model: int, num_heads: int, d_q: int, d_k: int, d_v: int, theta: float, max_seq_len: int, device=None, dtype=None):
+    super(WeiMultiHeadSelfAttentionWithRoPE, self).__init__(d_model, num_heads, d_q, d_k, d_v, device=device, dtype=dtype)
+    self.rope = WeiRoPE(theta, d_k, max_seq_len, device=device)
   
-    def __init__(self, d_model: int, num_heads: int, device=None, dtype=None):
-        super().__init__()
-        self.d_model = d_model
-        self.num_heads = num_heads
-        self.d_k = d_model // num_heads # d_v = d_k
-        assert d_model % num_heads == 0, "d_model must be divisible by num_heads"
-        self.device = device
-        self.dtype = dtype
-
-        self.w_qkv = WeiLinear(d_model, self.num_heads * self.d_k * 3, device=device, dtype=dtype)
-        self.w_o = WeiLinear(self.num_heads * self.d_k, self.d_model, device=device, dtype=dtype)
-        self.attention = WeiAttention(device=device, dtype=dtype)
+  def forward(self, in_features: torch.Tensor, token_positions: torch.Tensor) -> torch.Tensor:
+    q = self.w_q(in_features)
+    k = self.w_k(in_features)
+    v = self.w_v(in_features)
     
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
-        seq_len = x.shape[-2]
+    q = rearrange(q, "... seq_len (head d_q) -> ... head seq_len d_q", head=self.num_heads)
+    k = rearrange(k, "... seq_len (head d_k) -> ... head seq_len d_k", head=self.num_heads)
+    v = rearrange(v, "... seq_len (head d_v) -> ... head seq_len d_v", head=self.num_heads)
 
-        QKV = self.w_qkv(x)  # (batch, ..., seq_len, head * d_k * 3)
-        Q, K, V = rearrange(QKV, "... seq_len (three head d_k) -> three ... head seq_len d_k", three=3, head=self.num_heads)
+    q = self.rope(q, token_positions)
+    k = self.rope(k, token_positions)
 
-        mask = torch.tril(torch.ones((seq_len, seq_len), dtype=torch.bool)).to(self.device)
-        
-        atten = self.attention(Q, K, V, mask)  # (batch, ..., head, seq_len, d_k)
-        
-        # 将多头拼接回去
-        atten = rearrange(atten, "... head seq_len d_k -> ... seq_len (head d_k)")
-        
-        return self.w_o(atten)  # (batch, ..., seq_len, d_model)
+    sequence_length = in_features.shape[-2]
+    mask = torch.tril(torch.ones((sequence_length, sequence_length), dtype=torch.bool)).to(self.device)
+    att_output = self.attention(q, k, v, mask)
+    att_output = rearrange(att_output, "... head seq_len d_v -> ... seq_len (head d_v)")
+    return self.w_o(att_output)
