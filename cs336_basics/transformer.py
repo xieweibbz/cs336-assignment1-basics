@@ -140,7 +140,7 @@ class WeiMultiHeadSelfAttention(nn.Module):
     k = self.w_k(in_features)
     v = self.w_v(in_features)
     sequence_length = in_features.shape[-2]
-    mask = torch.tril(torch.ones((seq_len, seq_len), dtype=torch.bool)).to(self.device)
+    mask = torch.tril(torch.ones((sequence_length, sequence_length), dtype=torch.bool)).to(self.device)
     att_output = self.attention(q, k, v, mask)
     return self.w_o(att_output)
 
