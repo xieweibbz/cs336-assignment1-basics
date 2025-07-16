@@ -125,21 +125,21 @@ class WeiAttention(nn.Module):
 class WeiMultiHeadSelfAttention(nn.Module):
   def __init__(self, d_model: int, num_heads: int, d_att_in: int, d_q: int, d_k: int, d_v: int, device=None, dtype=None):
     super(WeiMultiHeadSelfAttention, self).__init__()
-    #self.w_q = WeiLinear(d_att_in, num_heads * d_q, device=device, dtype=dtype)
-    #self.w_k = WeiLinear(d_att_in, num_heads * d_k, device=device, dtype=dtype)
-    #self.w_v = WeiLinear(d_att_in, num_heads * d_v, device=device, dtype=dtype)
-    q = einsum(self.w_q.w, in_features, "num_heads_d_q d_in,  ... sequence_length d_in -> ... sequence_length num_heads_d_q")
-    k = einsum(self.w_k.w, in_features, "num_heads_d_k d_in,  ... sequence_length d_in -> ... sequence_length num_heads_d_k")
-    v = einsum(self.w_v.w, in_features, "num_heads_d_v d_in,  ... sequence_length d_in -> ... sequence_length num_heads_d_v")
+    self.w_q = WeiLinear(d_att_in, num_heads * d_q, device=device, dtype=dtype)
+    self.w_k = WeiLinear(d_att_in, num_heads * d_k, device=device, dtype=dtype)
+    self.w_v = WeiLinear(d_att_in, num_heads * d_v, device=device, dtype=dtype)
     self.attention = WeiAttention(device=device, dtype=dtype)
     self.w_o = WeiLinear(num_heads * d_v, d_model, device=device, dtype=dtype)
     self.device = device
     self.dtype = dtype
 
   def forward(self, in_features: torch.Tensor) -> torch.Tensor:
-    q = self.w_q(in_features)
-    k = self.w_k(in_features)
-    v = self.w_v(in_features)
+    q = einsum(self.w_q.w, in_features, "num_heads_d_q d_in,  ... sequence_length d_in -> ... sequence_length num_heads_d_q")
+    k = einsum(self.w_k.w, in_features, "num_heads_d_k d_in,  ... sequence_length d_in -> ... sequence_length num_heads_d_k")
+    v = einsum(self.w_v.w, in_features, "num_heads_d_v d_in,  ... sequence_length d_in -> ... sequence_length num_heads_d_v")
+    #q = self.w_q(in_features)
+    #k = self.w_k(in_features)
+    #v = self.w_v(in_features)
     sequence_length = in_features.shape[-2]
     mask = torch.ones((sequence_length, sequence_length), dtype=torch.bool, device=self.device)
     mask = torch.triu(mask).transpose(0,1)
