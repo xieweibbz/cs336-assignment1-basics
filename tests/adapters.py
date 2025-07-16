@@ -160,16 +160,16 @@ def run_multihead_self_attention(
         Float[Tensor, " ... sequence_length d_out"]: Tensor with the output of running your optimized, batched multi-headed attention
         implementation with the given QKV projection weights and input features.
     """
-    self_att = WeiMultiHeadSelfAttention(d_model, num_heads, q_proj_weight.shape[-2], k_proj_weight.shape[-2], v_proj_weight.shape[-2])
-    self_att.w_q.w.data = q_proj_weight
-    self_att.w_k.w.data = k_proj_weight
-    self_att.w_v.w.data = v_proj_weight
-    self_att.w_o.w.data = o_proj_weight
-    return self_att(in_features)
-    # mha = CopyMultiHeadSelfAttention(d_model, num_heads)
-    # mha.w_qkv.w.data = torch.cat([q_proj_weight, k_proj_weight, v_proj_weight], dim=0)
-    # mha.w_o.w.data = o_proj_weight
-    # return mha(in_features)
+    # self_att = WeiMultiHeadSelfAttention(d_model, num_heads, q_proj_weight.shape[-2], k_proj_weight.shape[-2], v_proj_weight.shape[-2])
+    # self_att.w_q.w.data = q_proj_weight
+    # self_att.w_k.w.data = k_proj_weight
+    # self_att.w_v.w.data = v_proj_weight
+    # self_att.w_o.w.data = o_proj_weight
+    # return self_att(in_features)
+    mha = CopyMultiHeadSelfAttention(d_model, num_heads)
+    mha.w_qkv.w.data = torch.cat([q_proj_weight, k_proj_weight, v_proj_weight], dim=0)
+    mha.w_o.w.data = o_proj_weight
+    return mha(in_features)
 
     
 
