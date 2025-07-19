@@ -188,3 +188,19 @@ class WeiTransformerBlock(nn.Module):
     p = torch.tensor(range(0, in_features.shape[-2]))
     multi_headed_self_att = in_features + self.multi_head_self_attention(self.rms_norm_att(in_features), p)
     return multi_headed_self_att + self.ffd(self.rms_norm_ffd(multi_headed_self_att))
+
+
+class WeiTransformer(nn.Module):
+  def __init__(self, vocab_size: int, context_length: int, d_model: int, num_layers: int, num_heads: int, d_ff: int, rope_theta: float, device=None, dtype=None):
+    super(WeiTransformer, self).__init__()
+    self.embedding = WeiEmbedding(vocab_size, d_model, device=device, dtype=dtype)
+    self.transformer_blocks = nn.ModuleList([WeiTransformerBlock(d_model, num_heads, d_model//num_heads, d_model//num_heads, d_model//num_heads, rope_theta, context_length, d_ff)])
+    self.embedding_norm = WeiRMSNorm(d_model, device=device, dtype=dtype)
+    self.pro_embedding_to_token = WeiLinear(d_model, vocab_size, device=device, dtype=dtype)
+
+  def forward(self, token_ids: torch.Tensor) -> torch.Tensor:
+    x = self.embedding(token_ids)
+    for transformer_block in self.transformer_blocks:
+      x = transformer_block(x)
+    x = self.embedding_norm(x)
+    return wei_softmax(self.pro_embedding_to_token(x), -1)
