@@ -20,6 +20,7 @@ from cs336_basics.transformer import wei_softmax
 from cs336_basics.transformer import WeiAttention
 from cs336_basics.transformer import WeiMultiHeadSelfAttention
 from cs336_basics.transformer import WeiMultiHeadSelfAttentionWithRoPE
+from cs336_basics.transformer import WeiTransformerBlock
 
 def run_linear(
     d_in: int,
@@ -310,7 +311,21 @@ def run_transformer_block(
         Float[Tensor, "batch sequence_length d_model"] Tensor with the output of
         running the Transformer block on the input features while using RoPE.
     """
-    raise NotImplementedError
+    transformer_block = WeiTransformerBlock(d_model, num_heads, d_model//num_heads, d_model//num_heads, d_model//num_heads, theta, max_seq_len, d_ff)
+
+    transformer_block.multi_head_self_attention.w_q.w.data = weights["attn.q_proj.weight"]
+    transformer_block.multi_head_self_attention.w_k.w.data = weights["attn.k_proj.weight"]
+    transformer_block.multi_head_self_attention.w_v.w.data = weights["attn.v_proj.weight"]
+    transformer_block.multi_head_self_attention.w_o.w.data = weights["attn.output_proj.weight"]
+
+    transformer_block.rms_norm_att.g.data = weights["ln1.weight"]
+    
+    transformer_block.ffd.w_1.w.data = weights["ffn.w1.weight"]
+    transformer_block.ffd.w_2.w.data = weights["ffn.w2.weight"]
+    transformer_block.ffd.w_3.w.data = weights["ffn.w3.weight"]
+    transformer_block.rms_norm_ffd.g.data = weights["ln2.weight"]
+
+    raise transformer_block(in_features)
 
 
 def run_transformer_lm(
