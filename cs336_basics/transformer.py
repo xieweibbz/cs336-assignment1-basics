@@ -203,4 +203,4 @@ class WeiTransformer(nn.Module):
     for transformer_block in self.transformer_blocks:
       x = transformer_block(x)
     x = self.embedding_norm(x)
-    return wei_softmax(self.pro_embedding_to_token(x), -1)
+    return self.pro_embedding_to_token(x)
