@@ -21,6 +21,8 @@ from cs336_basics.transformer import WeiAttention
 from cs336_basics.transformer import WeiMultiHeadSelfAttention
 from cs336_basics.transformer import WeiMultiHeadSelfAttentionWithRoPE
 from cs336_basics.transformer import WeiTransformerBlock
+from cs336_basics.transformer import WeiTransformer
+
 
 def run_linear(
     d_in: int,
@@ -407,7 +409,27 @@ def run_transformer_lm(
         Float[Tensor, "batch_size sequence_length vocab_size"]: Tensor with the predicted unnormalized
         next-word distribution for each token.
     """
-    raise NotImplementedError
+    
+    transformer = WeiTransformer(vocab_size, context_length, d_model, num_layers, num_heads, d_ff, rope_theta)
+    
+    transformer.embedding.embedding.data = weights["token_embeddings.weight"]
+    transformer.embedding_norm.g.data = weights["ln_final.weight"]
+    transformer.pro_embedding_to_token.w.data = weights["lm_head.weight"]
+
+    for i in range(0, num_layers):
+        transformer.transformer_blocks[i].multi_head_self_attention.w_q.w.data = weights["layers.{}.attn.q_proj.weight".format(i)]
+        transformer.transformer_blocks[i].multi_head_self_attention.w_k.w.data = weights["layers.{}.attn.k_proj.weight".format(i)]
+        transformer.transformer_blocks[i].multi_head_self_attention.w_v.w.data = weights["layers.{}.attn.v_proj.weight".format(i)]
+        transformer.transformer_blocks[i].multi_head_self_attention.w_o.w.data = weights["layers.{}.attn.output_proj.weight".format(i)]
+    
+        transformer.transformer_blocks[i].rms_norm_att.g.data = weights["layers.{}.ln1.weight".format(i)]
+        
+        transformer.transformer_blocks[i].ffd.w_1.w.data = weights["layers.{}.ffn.w1.weight".format(i)]
+        transformer.transformer_blocks[i].ffd.w_2.w.data = weights["layers.{}.ffn.w2.weight".format(i)]
+        transformer.transformer_blocks[i].ffd.w_3.w.data = weights["layers.{}.ffn.w3.weight".format(i)]
+        transformer.transformer_blocks[i].rms_norm_ffd.g.data = weights["layers.{}.ln2.weight".format(i)]
+
+    return transformer(in_indices)
 
 
 def run_rmsnorm(
