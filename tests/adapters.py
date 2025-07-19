@@ -325,7 +325,7 @@ def run_transformer_block(
     transformer_block.ffd.w_3.w.data = weights["ffn.w3.weight"]
     transformer_block.rms_norm_ffd.g.data = weights["ln2.weight"]
 
-    raise transformer_block(in_features)
+    return transformer_block(in_features)
 
 
 def run_transformer_lm(
