@@ -23,7 +23,7 @@ from cs336_basics.transformer import WeiMultiHeadSelfAttentionWithRoPE
 from cs336_basics.transformer import WeiTransformerBlock
 from cs336_basics.transformer import WeiTransformer
 from cs336_basics.train import wei_cross_entropy
-from cs336_basics.train import AdamWOptimizer
+from cs336_basics.train import WeiAdamWOptimizer
 
 
 def run_linear(
@@ -544,7 +544,7 @@ def get_adamw_cls() -> type[torch.optim.Optimizer]:
     """
     Returns a torch.optim.Optimizer that implements AdamW.
     """
-    opt = AdamWOptimizer()
+    opt = WeiAdamWOptimizer()
     return opt
 
 
