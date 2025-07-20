@@ -35,8 +35,9 @@ def wei_cross_entropy(inputs: Float[Tensor, " batch_size vocab_size"], targets: 
     return torch.mean(-pro)
 
 
+
 class WeiAdamWOptimizer(torch.optim.Optimizer):
-  def __init__(self, params, alpha=1e-3, beta1=0, beta2=0, theta=0, eps=0.00000001):
+  def __init__(self, params, alpha=1e-3, beta1=0.99, beta2=0.999, theta=0.01, eps=1e-8):
     if alpha < 0:
      raise ValueError(f"Invalid learning rate: {alpha}")
     if beta1 < 0 or beta1 >= 1:
@@ -65,16 +66,14 @@ class WeiAdamWOptimizer(torch.optim.Optimizer):
         if p.grad is None:
           continue
         state = self.state[p] # Get state associated with p.
-        t = state.get("t", 0) # Get iteration number from the state, or initial value.
+        t = state.get("t", 1) # Get iteration number from the state, or initial value.
         state["m"] = state["m"] * beta1 + (1 - beta1) * p.grad.data
         state["v"] = state["v"] * beta2 + (1 - beta2) * p.grad.data**2
-        if t == 0:
-          state["alpha_t"] = alpha
-        else:
-          state["alpha_t"] = alpha * (1 - beta2**t)**0.5 / (1 - beta1**t)
+        state["alpha_t"] = alpha * (1 - beta2**t)**0.5 / (1 - beta1**t)
         
         grad = p.grad.data # Get the gradient of loss with respect to p.
         p.data -= state["alpha_t"] * state["m"] / (state["v"]**0.5 + eps) # Update weight tensor in-place.
         p.data = p.data - alpha * theta * p.data# Update weight tensor in-place.
         state["t"] = t + 1 # Increment iteration number.
     return loss
+
