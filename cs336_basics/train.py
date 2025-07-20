@@ -35,7 +35,7 @@ def wei_cross_entropy(inputs: Float[Tensor, " batch_size vocab_size"], targets: 
     return torch.mean(-pro)
 
 
-class AdamWOptimizer(torch.optim.Optimizer):
+class WeiAdamWOptimizer(torch.optim.Optimizer):
   def __init__(self, params, alpha=1e-3, beta1=0, beta2=0, theta=0, eps=0.00000001):
     if alpha < 0:
      raise ValueError(f"Invalid learning rate: {alpha}")
