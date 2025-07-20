@@ -22,7 +22,7 @@ from cs336_basics.transformer import WeiMultiHeadSelfAttention
 from cs336_basics.transformer import WeiMultiHeadSelfAttentionWithRoPE
 from cs336_basics.transformer import WeiTransformerBlock
 from cs336_basics.transformer import WeiTransformer
-from cs336_basics.transformer import wei_cross_entropy
+from cs336_basics.train import wei_cross_entropy
 
 def run_linear(
     d_in: int,
