@@ -544,8 +544,7 @@ def get_adamw_cls() -> type[torch.optim.Optimizer]:
     """
     Returns a torch.optim.Optimizer that implements AdamW.
     """
-    opt = WeiAdamWOptimizer()
-    return opt
+    return WeiAdamWOptimizer
 
 
 def run_get_lr_cosine_schedule(
