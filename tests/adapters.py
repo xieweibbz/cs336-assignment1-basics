@@ -22,7 +22,7 @@ from cs336_basics.transformer import WeiMultiHeadSelfAttention
 from cs336_basics.transformer import WeiMultiHeadSelfAttentionWithRoPE
 from cs336_basics.transformer import WeiTransformerBlock
 from cs336_basics.transformer import WeiTransformer
-
+from cs336_basics.transformer import wei_cross_entropy
 
 def run_linear(
     d_in: int,
@@ -523,7 +523,7 @@ def run_cross_entropy(inputs: Float[Tensor, " batch_size vocab_size"], targets: 
     Returns:
         Float[Tensor, ""]: The average cross-entropy loss across examples.
     """
-    raise NotImplementedError
+    return wei_cross_entropy(inputs, targets)
 
 
 def run_gradient_clipping(parameters: Iterable[torch.nn.Parameter], max_l2_norm: float) -> None:
