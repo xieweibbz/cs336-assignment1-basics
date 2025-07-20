@@ -37,14 +37,14 @@ def wei_cross_entropy(inputs: Float[Tensor, " batch_size vocab_size"], targets: 
 
 
 class WeiAdamWOptimizer(torch.optim.Optimizer):
-  def __init__(self, params, alpha=1e-3, beta1=0.99, beta2=0.999, theta=0.01, eps=1e-8):
-    if alpha < 0:
-     raise ValueError(f"Invalid learning rate: {alpha}")
-    if beta1 < 0 or beta1 >= 1:
-     raise ValueError(f"Invalid learning parameter: {beta1}")
-    if beta2 < 0 or beta2 >= 1:
-     raise ValueError(f"Invalid learning parameter: {beta2}")
-    defaults = {"alpha": alpha, "beta1": beta1, "beta2": beta2, "theta": theta, "eps": eps}
+  def __init__(self, params, lr=1e-3, weight_decay=0.01, betas=(0.9, 0.999), eps=1e-8):
+    if lr < 0:
+     raise ValueError(f"Invalid learning rate: {lr}")
+    if betas[0] < 0 or betas[0] >= 1:
+     raise ValueError(f"Invalid learning parameter: {betas[0]}")
+    if betas[1] < 0 or betas[1] >= 1:
+     raise ValueError(f"Invalid learning parameter: {betas[1]}")
+    defaults = {"alpha": lr, "beta1": betas[0], "beta2": betas[1], "theta": weight_decay, "eps": eps}
     super().__init__(params, defaults)
 
     for group in self.param_groups:
@@ -52,7 +52,7 @@ class WeiAdamWOptimizer(torch.optim.Optimizer):
         state = self.state[p]
         state["m"] = torch.zeros_like(p.data)
         state["v"] = torch.zeros_like(p.data)
-        state["alpha_t"] = alpha
+        state["alpha_t"] = lr
 
   def step(self, closure: Optional[Callable] = None):
     loss = None if closure is None else closure()
