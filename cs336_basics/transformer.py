@@ -206,6 +206,14 @@ class WeiTransformer(nn.Module):
     return self.pro_embedding_to_token(x)
 
 
+def wei_log_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, " ..."]:
+    max, max_i = torch.max(in_features, dim=dim, keepdim = True)
+    exp = torch.exp(in_features - max)
+    log_exp = in_features - max
+    sum = torch.sum(exp, dim=dim, keepdim = True)
+    # log_softmax = log(exp / sum) = log(exp) - log(sum)
+    return log_exp - torch.log(sum)
+
 def wei_cross_entropy(inputs: Float[Tensor, " batch_size vocab_size"], targets: Int[Tensor, " batch_size"]) -> Float[Tensor, ""]:
     """Given a tensor of inputs and targets, compute the average cross-entropy
     loss across examples.
@@ -219,6 +227,6 @@ def wei_cross_entropy(inputs: Float[Tensor, " batch_size vocab_size"], targets: 
     Returns:
         Float[Tensor, ""]: The average cross-entropy loss across examples.
     """
-    softmax = wei_softmax(inputs, dim=-1)
-    pro = softmax.gather(1, targets.unsqueeze(1)).squeeze(0)
-    return torch.mean(-torch.log(pro))
+    log_softmax = wei_log_softmax(inputs, dim=-1)
+    pro = log_softmax.gather(1, targets.unsqueeze(1)).squeeze(0)
+    return torch.mean(-pro)
