@@ -25,6 +25,7 @@ from cs336_basics.transformer import WeiTransformer
 from cs336_basics.train import wei_cross_entropy
 from cs336_basics.train import WeiAdamWOptimizer
 from cs336_basics.train import copy_learning_rate_cosine_schedule
+from cs336_basics.train import copy_clip_grad
 
 
 def run_linear(
@@ -538,7 +539,10 @@ def run_gradient_clipping(parameters: Iterable[torch.nn.Parameter], max_l2_norm:
 
     The gradients of the parameters (parameter.grad) should be modified in-place.
     """
-    raise NotImplementedError
+    return copy_clip_grad(
+        params=parameters,
+        max_norm=max_l2_norm,
+    )
 
 
 def get_adamw_cls() -> type[torch.optim.Optimizer]:
