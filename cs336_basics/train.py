@@ -94,3 +94,17 @@ def copy_learning_rate_cosine_schedule(
         )
     else:
         return min_learning_rate
+
+
+def copy_clip_grad(params: Iterable[torch.nn.Parameter], max_norm: float = 1.0, eps: float = 1e-6):
+    total_norm = 0.0
+    for param in params:
+        if param.grad is not None:
+            total_norm += torch.sum(param.grad ** 2)
+    total_norm = total_norm ** 0.5
+
+    clip_coef = max_norm / (total_norm + 1e-6)
+    if clip_coef < 1.0:
+        for param in params:
+            if param.grad is not None:
+                param.grad.data.mul_(clip_coef)
