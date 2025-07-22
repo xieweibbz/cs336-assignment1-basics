@@ -26,6 +26,7 @@ from cs336_basics.train import wei_cross_entropy
 from cs336_basics.train import WeiAdamWOptimizer
 from cs336_basics.train import copy_learning_rate_cosine_schedule
 from cs336_basics.train import copy_clip_grad
+from cs336_basics.train import copy_get_batch
 
 
 def run_linear(
@@ -495,7 +496,7 @@ def run_get_batch(
         is the sampled input sequences, and the second tuple item is the corresponding
         language modeling labels.
     """
-    raise NotImplementedError
+    return copy_get_batch(dataset, batch_size, context_length, device)
 
 
 def run_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, " ..."]:
