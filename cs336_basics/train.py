@@ -1,11 +1,15 @@
 import math
 import torch
 import torch.nn as nn
+import numpy as np
+import numpy.typing as npt
+
 from einops import rearrange, einsum
 from jaxtyping import Float, Int
 from torch import Tensor
 from collections.abc import Callable, Iterable
 from typing import Optional
+
 
 
 def wei_log_softmax(in_features: Float[Tensor, " ..."], dim: int) -> Float[Tensor, " ..."]:
@@ -108,3 +112,18 @@ def copy_clip_grad(params: Iterable[torch.nn.Parameter], max_norm: float = 1.0, 
         for param in params:
             if param.grad is not None:
                 param.grad.data.mul_(clip_coef)
+
+
+def get_batch(dataset: npt.NDArray, batch_size: int, context_length: int, device: str
+) -> tuple[torch.Tensor, torch.Tensor]:
+    dataset_len = dataset.shape[0]
+    if dataset_len < context_length:
+        raise ValueError(f"Dataset length {dataset_len} is less than context length {context_length}.")
+
+    inputs = np.stack([dataset[i:i + context_length] for i in range(0, batch_size)], dtype=np.int64)
+    targets = np.stack([dataset[i + 1:i + context_length + 1] for i in range(0, batch_size)], dtype=np.int64)
+
+    return (
+        torch.from_numpy(inputs).to(device),
+        torch.from_numpy(targets).to(device)
+    )
