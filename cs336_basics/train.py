@@ -120,8 +120,9 @@ def copy_get_batch(dataset: npt.NDArray, batch_size: int, context_length: int, d
     if dataset_len < context_length:
         raise ValueError(f"Dataset length {dataset_len} is less than context length {context_length}.")
 
-    inputs = np.stack([dataset[i:i + context_length] for i in range(0, batch_size)], dtype=np.int64)
-    targets = np.stack([dataset[i + 1:i + context_length + 1] for i in range(0, batch_size)], dtype=np.int64)
+    starts = np.random.randint(0, dataset_len - context_length, size=batch_size)
+    inputs = np.stack([dataset[start:start + context_length] for start in starts], dtype=np.int64)
+    targets = np.stack([dataset[start + 1:start + context_length + 1] for start in starts], dtype=np.int64)
 
     return (
         torch.from_numpy(inputs).to(device),
