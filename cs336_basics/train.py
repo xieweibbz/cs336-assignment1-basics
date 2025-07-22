@@ -114,7 +114,7 @@ def copy_clip_grad(params: Iterable[torch.nn.Parameter], max_norm: float = 1.0, 
                 param.grad.data.mul_(clip_coef)
 
 
-def get_batch(dataset: npt.NDArray, batch_size: int, context_length: int, device: str
+def copy_get_batch(dataset: npt.NDArray, batch_size: int, context_length: int, device: str
 ) -> tuple[torch.Tensor, torch.Tensor]:
     dataset_len = dataset.shape[0]
     if dataset_len < context_length:
