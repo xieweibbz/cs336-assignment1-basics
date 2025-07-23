@@ -5,6 +5,7 @@ import time
 import cProfile
 import pstats
 import heapq
+import numpy as np
 
 from collections import Counter
 from typing import BinaryIO, Dict, List, Set, Tuple, Iterable, Iterator
