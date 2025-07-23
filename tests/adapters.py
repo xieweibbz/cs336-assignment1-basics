@@ -11,6 +11,7 @@ import torch.nn as nn
 from torch import Tensor
 
 from cs336_basics.train_bpe import train_bpe
+from cs336_basics.train_bpe import copy_train_bpe
 from cs336_basics.transformer import WeiEmbedding
 from cs336_basics.transformer import WeiLinear
 from cs336_basics.transformer import WeiRMSNorm
@@ -679,4 +680,5 @@ def run_train_bpe(
                 representing that <token1> was merged with <token2>.
                 Merges are ordered by order of creation.
     """
-    return train_bpe(input_path, vocab_size, special_tokens, **kwargs,)
+    return copy_train_bpe(input_path, vocab_size, special_tokens, **kwargs)
+    # return train_bpe(input_path, vocab_size, special_tokens, **kwargs,)
