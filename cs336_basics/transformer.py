@@ -183,9 +183,10 @@ class WeiTransformerBlock(nn.Module):
     self.multi_head_self_attention = WeiMultiHeadSelfAttentionWithRoPE(d_model, num_heads, d_q, d_k, d_v, theta, max_seq_len, device=device, dtype=dtype)
     self.rms_norm_ffd = WeiRMSNorm(d_model, device=device, dtype=dtype)
     self.ffd = WeiPositionwiseFfd(d_model, d_ff, device=device, dtype=dtype)
+    self.device = device
 
   def forward(self, in_features: torch.Tensor) -> torch.Tensor:
-    p = torch.tensor(range(0, in_features.shape[-2]))
+    p = torch.tensor(range(0, in_features.shape[-2])).to(self.device)
     multi_headed_self_att = in_features + self.multi_head_self_attention(self.rms_norm_att(in_features), p)
     return multi_headed_self_att + self.ffd(self.rms_norm_ffd(multi_headed_self_att))
 
