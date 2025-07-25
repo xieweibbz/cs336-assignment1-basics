@@ -194,7 +194,7 @@ class WeiTransformer(nn.Module):
   def __init__(self, vocab_size: int, context_length: int, d_model: int, num_layers: int, num_heads: int, d_ff: int, rope_theta: float, device=None, dtype=None):
     super(WeiTransformer, self).__init__()
     self.embedding = WeiEmbedding(vocab_size, d_model, device=device, dtype=dtype)
-    self.transformer_blocks = nn.ModuleList([WeiTransformerBlock(d_model, num_heads, d_model//num_heads, d_model//num_heads, d_model//num_heads, rope_theta, context_length, d_ff) for i in range(num_layers)])
+    self.transformer_blocks = nn.ModuleList([WeiTransformerBlock(d_model, num_heads, d_model//num_heads, d_model//num_heads, d_model//num_heads, rope_theta, context_length, d_ff, device=device) for i in range(num_layers)])
     self.embedding_norm = WeiRMSNorm(d_model, device=device, dtype=dtype)
     self.pro_embedding_to_token = WeiLinear(d_model, vocab_size, device=device, dtype=dtype)
 
