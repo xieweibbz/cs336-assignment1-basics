@@ -35,8 +35,10 @@ def wei_cross_entropy(inputs: Float[Tensor, " batch_size vocab_size"], targets: 
     Returns:
         Float[Tensor, ""]: The average cross-entropy loss across examples.
     """
-    log_softmax = wei_log_softmax(inputs, dim=-1)
-    pro = log_softmax.gather(1, targets.unsqueeze(1)).squeeze(0)
+    inputs_reshaped = rearrange(inputs, "b ... v -> (b ...) v")  # (batch_size, vocab_size)
+    targets_reshaped = rearrange(targets, "b ... -> (b ...)")  # (batch_size,)
+    log_softmax = wei_log_softmax(inputs_reshaped, dim=-1)
+    pro = log_softmax.gather(1, targets_reshaped.unsqueeze(1)).squeeze(0)
     return torch.mean(-pro)
 
 
